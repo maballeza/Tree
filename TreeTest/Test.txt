@@ -1,0 +1,191 @@
+// Tree.hpp
+
+template<typename T>
+class Tree
+{
+public:
+    ~Tree();
+    struct Node {
+        Node(const int k, T* v) : key(k), value(v), parent(nullptr), left(nullptr), right(nullptr) {}
+        ~Node();
+        int key;
+        T* value;
+        Node* parent;
+        Node* left;
+        Node* right;
+    };
+    // Accessors.
+    T* Search(const int k) const;
+    T* Minimum() const;
+    T* Maximum() const;
+    T* Predecessor(const int k) const;
+    T* Successor(const int k) const;
+
+    // Modifiers.
+    T* Insert(const int k, T&& v);
+    T* Delete(const int k);
+private:
+    // Internal use.
+    Node* search(const int k, Node* n = nullptr) const;
+    Node* minimum(Node* n) const;
+    Node* maximum(Node* n) const;
+    Node* predecessor(Node* n) const;
+    Node* successor(Node* n) const;
+    void transplant(Node* m, Node* n);
+    Node* allocate(const int key, T&& value);
+
+    Node* root{};
+};
+
+
+/**
+* Binary Tree Implementation 
+*    Non-balanced.
+*    Possible cases:
+*	      duplicate keys (TODO: Insert() returns false if key exists)
+*	      empty tree
+* Test:       
+*      Functional:
+*      		Return values
+*      		Key searches (non-sensical)
+*      Structural:
+*      		
+*      		
+*      		
+*            
+*      
+*/
+template<typename T>
+class Tree
+{
+public:
+    ~Tree();
+    struct Node {
+        Node(const int k, T* v) : key(k), value(v), parent(nullptr), left(nullptr), right(nullptr) {}
+        ~Node();
+        int key;
+        T* value;
+        Node* parent;
+        Node* left;
+        Node* right;
+    };
+    // Accessors.
+    T* Search(const int k) const;
+    T* Minimum() const;
+    T* Maximum() const;
+    T* Predecessor(const int k) const;
+    T* Successor(const int k) const;
+
+    // Modifiers.
+    T* Insert(const int k, T&& v);
+    T* Delete(const int k);
+private:
+    // Internal use.
+    Node* search(const int k, Node* n = nullptr) const;
+    Node* minimum(Node* n) const;
+    Node* maximum(Node* n) const;
+    Node* predecessor(Node* n) const;
+    Node* successor(Node* n) const;
+    void transplant(Node* m, Node* n);
+    Node* allocate(const int key, T&& value);
+
+    Node* root{};
+};
+
+
+Test Overview:
+1. Invariants:
+	Test
+2. Private Accessors, Modifiers:
+	Private, parameterized test
+3. Public Accessors, Modifers:
+	Parameterized test
+
+Structures:
+	A. [ 1, 10, 9, ..., 2 ]
+	B. [ 1, 5, 10, 4, 9, ..., 2, 7, 6 ]
+
+
+1. Invariants
+Tree initialization:
+  root = nullptr
+Node initialization:
+  parent = nullptr
+  left = nullptr
+  right = nullptr
+  value = allocated memory with value
+
+2a. Private Accessors
+Success:	Returns pointer to node w/ condition
+  CASE: Same node
+  CASE: Different node
+    Node* minimum(Node* n) const;
+    Node* maximum(Node* n) const;
+    Node* predecessor(Node* n) const;
+    Node* successor(Node* n) const;
+  CASE: Valid key
+    Node* search(const int k, Node* n = nullptr) const;
+Failure:	Returns nullptr
+  CASE:	Empty Tree (special case--non-existent value)
+  CASE:	Non-existent value
+    Node* minimum(Node* n) const;
+    Node* maximum(Node* n) const;
+    Node* predecessor(Node* n) const;
+    Node* successor(Node* n) const;
+  CASE:	Non-existent keys
+    Node* search(const int k, Node* n = nullptr) const;
+2b. Private Modifiers:
+Success:	Returns true
+  CASE:	[strucA] max() -> root->child
+		B: n->parent->child == A: m->parent->child
+		B: n->parent == A: m->parent
+		A: (B: n->parent->child) == nullptr
+  CASE:	[strucA] max() -> root
+		B: n->parent->child == A: m->child->parent
+  CASE:	[strucB] min(root->child) -> successor()
+		B: n->parent->child == A: m->parent->child
+		B: n->parent == A: m->parent
+		A: (B: n->parent->child) == nullptr
+Failure:	Returns false
+  CASE:	Non-existent replacement (Not allowed)
+  CASE:	Non-existent replacee (Not allowed)
+    void transplant(Node* m, Node* n);
+Success:	Returns new node
+  CASE:	
+Failure:	...
+  CASE: ...
+    Node* allocate(const int key, T&& value);
+
+
+3a. Public Accessors (Composition)
+Success:	Returns pointer to value
+  CASES: *T == known min, max, succ, pred
+Failure:	Returns nullptr
+  CASE:	Empty Tree (special case--non-existent value)
+    T* Minimum() const;
+	    Node* search(const int k, Node* n = nullptr) const;
+	    Node* minimum(Node* n) const;
+    T* Maximum() const;
+	    Node* search(const int k, Node* n = nullptr) const;
+	    Node* maximum(Node* n) const;
+  CASE:	Non-existent value
+  CASE:	Non-existent keys
+    T* Search(const int k) const;
+	    Node* search(const int k, Node* n = nullptr) const;
+    T* Predecessor(const int k) const;
+	    Node* search(const int k, Node* n = nullptr) const;
+	    Node* predecessor(Node* n) const;
+    T* Successor(const int k) const;
+	    Node* search(const int k, Node* n = nullptr) const;
+	    Node* successor(Node* n) const;
+3b. Public Modifiers (Composition);
+Success:		Return true
+  CASE:	...
+Failure:		Return false
+  CASE:	
+    T* Insert(const int k, T&& v
+Success:	Returns value
+  CASE:	...
+Failure:	...
+  CASE:	...
+    T* Delete(const int k);

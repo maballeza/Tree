@@ -18,14 +18,14 @@ public:
         Node* right;
     };
     // Accessors
-    T* Search(const int k) const;   // If the item does not exist, returns nullptr.
-    T* Minimum() const; // If the tree is empty, returns nullptr;
-    T* Maximum() const; // If the tree is empty, returns nullptr;
-    T* Predecessor(const int k) const;  // If no predecessor exists, returns nullptr.
-    T* Successor(const int k) const;    // If no successor exists, returns nullptr.
+    T* Search(const int k) const;   // Returns nullptr if the item does not exist.
+    T* Minimum() const; // Returns nullptr if the tree is empty.
+    T* Maximum() const; // Returns nullptr if the tree is empty.
+    T* Predecessor(const int k) const;  // Returns nullptr if no predecessor exists.
+    T* Successor(const int k) const;    // Returns nullptr if no successor exists.
     // Modifiers
     T* Insert(const int k, T&& v);
-    T* Delete(const int k); // If the item exists, returns the corresponding value; otherwise returns nullptr.
+    T Delete(const int k); // Returns -1 if the value does not exist.
 private:
     Node* search(const int k, Node* n = nullptr) const; // Also supports both [Prede-/Suc-]cessor() functions.
     Node* minimum(Node* n) const;
@@ -33,8 +33,8 @@ private:
     Node* predecessor(Node* n) const;
     Node* successor(Node* n) const;
     // Establishes mutual parent-child relationship.
-    void transplant(Node* m, Node* n);  // Supports Insert()
-    // Memory management
+    void transplant(Node* m, Node* n);  // Supports Insert().
+    // Memory management.
     Node* allocate(const int key, T&& value);
 
     Node* root{};
@@ -223,7 +223,7 @@ T* Tree<T>::Insert(const int k, T&& val) {
 }
 
 template<typename T>
-T* Tree<T>::Delete(const int k) {
+T Tree<T>::Delete(const int k) {
     if (Node* found = search(k, root)) {
         if (nullptr == found->left) {
             transplant(found, found->right);
@@ -242,11 +242,11 @@ T* Tree<T>::Delete(const int k) {
             m->left = found->left;
             m->left->parent = m;
         }
-        T ret = *found->value;
+        T value = *found->value;
         delete found;
-        return &ret;
+        return value;
     }
-    return nullptr;
+    return T{ -1 };
 }
 
 template<typename T>
