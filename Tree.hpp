@@ -1,64 +1,60 @@
 #pragma once
 
-/**
- * Binary Tree
- */
-template<typename T>
+template<typename T, typename U>
 struct Node {
-    Node(int k, T&& v) : key(k), value(v), parent{}, left{}, right{} {}
-    Node(const Node& n) : key(n.key), value(n.value), parent(n.parent), left(n.left), right(n.right) {}
-    Node& operator=(const Node&);
-    ~Node() {}
-    int key;
-    T value;
+    U key;
+    T item;
 private:
-    template<typename T> friend class Tree;
+    template<typename T, typename U> friend class Tree;
+    Node(U k, T&& v) : key(k), item(v), parent{}, left{}, right{} {}
     Node* parent;
     Node* left;
     Node* right;
 };
 
-template<typename T>
-Node<T>& Node<T>::operator=(const Node& n) {
-    value = n.value;
-    key = n.kay;
-    parent = n.parent;
-    left = n.left;
-    right = n.right;
-}
-
-template<typename T>
-class Tree {
+/**
+*   Unbalanced Binary Tree
+*/
+template<typename T, typename U>
+class Tree{
 public:
     Tree() : root{} {}
     ~Tree();
     
-    // Modifiers
-    Node<T>* Insert(int k, T&& val);
-    Node<T> Delete(Node<T>* n);
-    // Accessors return nullptr if the requested value does not exist or if the tree is empty.
-    Node<T>* Search(int k, Node<T>* n = nullptr) const;
-    Node<T>* Minimum(Node<T>* n = nullptr) const;
-    Node<T>* Maximum(Node<T>* n = nullptr) const;
-    Node<T>* Predecessor(Node<T>* n) const;
-    Node<T>* Successor(Node<T>* n) const;
+    
+    void TreeWalk() const;
+    
+    /**
+    * Modifiers
+    */
+    void Insert(U k, T&& itm);
+    void Delete(Node<T, U>** n);
+    
+    /**
+    * Accessors
+    *  Return nullptr if the requested item does not exist or if the tree is empty.
+    */
+    Node<T, U>* Search(U k, Node<T, U>* n = nullptr) const;
+    Node<T, U>* Minimum(Node<T, U>* n = nullptr) const;
+    Node<T, U>* Maximum(Node<T, U>* n = nullptr) const;
+    Node<T, U>* Predecessor(Node<T, U>* n) const;
+    Node<T, U>* Successor(Node<T, U>* n) const;
     
 private:
-    void Transplant(Node<T>* m, Node<T>* n);  // Establishes mutual parent-child relationship; supports Insert().
-    Node<T>* Allocate(int k, T&& val);
-    
-    Node<T>* root;
+    void Transplant(Node<T, U>* m, Node<T, U>* n);  // Establishes mutual parent-child relationship; supports Insert().
+    Node<T, U>* Allocate(U k, T&& itm);
+    Node<T, U>* root;
 };
 
-template<typename T>
-Tree<T>::~Tree() {
-    if (Node<T>* min = Minimum(root)) { // If the tree is non-empty.
-        while (Node<T>* n = Successor(min)) {
+template<typename T, typename U>
+Tree<T, U>::~Tree() {
+    if (Node<T, U>* min = Minimum(root)) { // Deletes by walking up the tree.
+        while (Node<T, U>* n = Successor(min)) {
             if (min->right) {
-                min->right->parent = nullptr;   // Successor() dereferences parent
+                min->right->parent = nullptr;
             }
-            if (min->parent && min == min->parent->left) {
-                min->parent->left = nullptr;    // Successor() calls Minimum() which dereferences left
+            if (nullptr != min->parent && min == min->parent->left) {
+                min->parent->left = nullptr;
             }
             delete min;
             min = n;
@@ -67,72 +63,79 @@ Tree<T>::~Tree() {
     }
 }
 
-template<typename T>
-Node<T>* Tree<T>::Insert(int k, T&& val) {
-    if (Node<T>* insertion = Allocate(k, std::forward<T>(val))) {
-        if (nullptr == root) {
-            root = insertion;
+template<typename T, typename U>
+void Tree<T, U>::TreeWalk() const {
+    if (Node<T, U>* min = Minimum(root)) { // Deletes by walking up the tree.
+        while (Node<T, U>* n = Successor(min)) {
+            std::cout << "{ " << min->key << "    , " << min->item << " }" << '\n';
+            min = n;
         }
-        else {
-            Node<T>* m = root;
-            Node<T>* n = m;
+        std::cout << "{ " << min->key << "\t, " << min->item << " }" << '\n';
+    }
+}
+
+template<typename T, typename U>
+void Tree<T, U>::Insert(U k, T&& itm) {
+    if (Node<T, U>* insertion = Allocate(k, std::forward<T>(itm))) {
+        if (Node<T, U>* m = root) {
+            Node<T, U>* n = m;
             while (n) {
                 m = n;
-                if (n->key <= insertion->key) {
-                    n = n->right;
-                }
-                else {
+                if (insertion->key < n->key) {
                     n = n->left;
                 }
+                else {
+                    n = n->right;
+                }
             }
-            if (m->key <= insertion->key) {
-                m->right = insertion;
-                m->right->parent = m;
-            }
-            else {
+            if (insertion->key < m->key) {
                 m->left = insertion;
                 m->left->parent = m;
             }
-        }
-        return insertion;
-    }
-    return nullptr;
-}
-
-template<typename T>
-Node<T> Tree<T>::Delete(Node<T>* n) {
-    if (n) {
-        if (nullptr == n->left) {
-            Transplant(n, n->right);
-        }
-        else if (nullptr == n->right) {
-            Transplant(n, n->left);
+            else {
+                m->right = insertion;
+                m->right->parent = m;
+            }
         }
         else {
-            Node<T>* min = Minimum(n->right);
-            if (n != min->parent) {
-                Transplant(min, min->right);
-                min->right = n->right;
-                min->right->parent = min;
-            }
-            Transplant(n, min); // Handles parent-child references.
-            min->left = n->left;
-            min->left->parent = min;
+            root = insertion;
         }
-        Node<T> value = *n;
-        delete n;
-        return value;
     }
-    return Node<T>{ -1, T{} };
 }
 
-template<typename T>
-Node<T>* Tree<T>::Search(int k, Node<T>* n) const {
+template<typename T, typename U>
+void Tree<T, U>::Delete(Node<T, U>** n) {
+    if (Node<T, U>* np = *n) {
+        if (nullptr == np->left) {
+            Transplant(np, np->right); // Handles parent-child references.
+        }
+        else if (nullptr == np->right) {
+            Transplant(np, np->left);
+        }
+        else {
+            Node<T, U>* min = Minimum(np->right);
+            if (np != min->parent) {
+                Transplant(min, min->right);
+                min->right = np->right;
+                min->right->parent = min;
+            }
+            Transplant(np, min);
+            min->left = np->left;
+            min->left->parent = min;
+        }
+        Node<T, U> item = *np;
+        delete *n;
+        *n = nullptr;
+    }
+}
+
+template<typename T, typename U>
+Node<T, U>* Tree<T, U>::Search(U k, Node<T, U>* n) const {
     if (n || root) {
         if (!n && root) {
             n = root;
         }
-        if (k > n->key && n->right) {
+        if (n->key < k && n->right) {
             n = Search(k, n->right);
         }
         else if (k < n->key && n->left) {
@@ -145,8 +148,8 @@ Node<T>* Tree<T>::Search(int k, Node<T>* n) const {
     return n;
 }
 
-template<typename T>
-Node<T>* Tree<T>::Minimum(Node<T>* n) const {
+template<typename T, typename U>
+Node<T, U>* Tree<T, U>::Minimum(Node<T, U>* n) const {
     if (n || root) {
         if (!n) {
             n = root;
@@ -158,8 +161,8 @@ Node<T>* Tree<T>::Minimum(Node<T>* n) const {
     return n;
 }
 
-template<typename T>
-Node<T>* Tree<T>::Maximum(Node<T>* n) const {
+template<typename T, typename U>
+Node<T, U>* Tree<T, U>::Maximum(Node<T, U>* n) const {
     if (n || root) {
         if (!n) {
             n = root;
@@ -171,9 +174,9 @@ Node<T>* Tree<T>::Maximum(Node<T>* n) const {
     return n;
 }
 
-template<typename T>
-Node<T>* Tree<T>::Predecessor(Node<T>* found) const {
-    if (Node<T>* n = found) {
+template<typename T, typename U>
+Node<T, U>* Tree<T, U>::Predecessor(Node<T, U>* found) const {
+    if (Node<T, U>* n = found) {
         if (n->left) {
             found = Maximum(n->left);
         }
@@ -190,9 +193,9 @@ Node<T>* Tree<T>::Predecessor(Node<T>* found) const {
     return found;
 }
 
-template<typename T>
-Node<T>* Tree<T>::Successor(Node<T>* found) const {
-    if (Node<T>* n = found) {
+template<typename T, typename U>
+Node<T, U>* Tree<T, U>::Successor(Node<T, U>* found) const {
+    if (Node<T, U>* n = found) {
         if (n->right) {
             found = Minimum(n->right);
         }
@@ -209,8 +212,8 @@ Node<T>* Tree<T>::Successor(Node<T>* found) const {
     return found;
 }
 
-template<typename T>
-void Tree<T>::Transplant(Node<T>* m, Node<T>* n) { 
+template<typename T, typename U>
+void Tree<T, U>::Transplant(Node<T, U>* m, Node<T, U>* n) { 
     if (n) {
         n->parent = m->parent;
     }
@@ -225,14 +228,13 @@ void Tree<T>::Transplant(Node<T>* m, Node<T>* n) {
     }
 }
 
-template<typename T>
-Node<T>* Tree<T>::Allocate(int k, T&& val) {
+template<typename T, typename U>
+Node<T, U>* Tree<T, U>::Allocate(U k, T&& itm) {
     try {
-        Node<T>* node = new Node<T>{ k, std::forward<T>(val) };
-        return node;
+        return new Node<T, U>{ k, std::forward<T>(itm) };
     }
     catch (std::bad_alloc e) {
-        std::cerr << "Node allocation error in file " << __FILE__ << " (line " << __LINE__ - 4 << ")." << std::endl;
+        std::cerr << "Node allocation failure on line " << __LINE__ - 3 << " of " << __FILE__ << "." << std::endl;
         return nullptr;
     }
 }
