@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
 #include "TreeTest.hpp"
+#include "TreeTestListener.hpp"
 
 REGISTER_TYPED_TEST_SUITE_P(TreeTest,
     Search,
