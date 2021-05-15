@@ -1,16 +1,5 @@
 #pragma once
 
-template<typename K, typename I>
-struct Node {
-    K key;
-    I item;
-private:
-    template<typename K, typename I> friend class Tree;
-    Node(K k, I&& v) : key(k), item(v), parent{}, left{}, right{} {}
-    Node* parent;
-    Node* left;
-    Node* right;
-};
 
 /**
 *   Unbalanced Binary Tree
@@ -18,6 +7,17 @@ private:
 template<typename K, typename I>
 class Tree {
 public:
+    struct Node {
+        K key;
+        I item;
+    private:
+        friend class Tree;
+        Node(K k, I&& v) : key(k), item(v), parent{}, left{}, right{} {}
+        Node* parent;
+        Node* left;
+        Node* right;
+    };
+
     Tree() : root{} {}
     ~Tree();
     
@@ -27,28 +27,28 @@ public:
     * Modifiers
     */
     void Insert(K k, I&& itm);
-    void Delete(Node<K, I>** n);
+    void Delete(Node** n);
     
     /**
     * Accessors
     *  Return nullptr if the requested item does not exist or if the tree is empty.
     */
-    Node<K, I>* Search(K k, Node<K, I>* n = nullptr) const;
-    Node<K, I>* Minimum(Node<K, I>* n = nullptr) const;
-    Node<K, I>* Maximum(Node<K, I>* n = nullptr) const;
-    Node<K, I>* Predecessor(Node<K, I>* n) const;
-    Node<K, I>* Successor(Node<K, I>* n) const;
+    Node* Search(K k, Node* n = nullptr) const;
+    Node* Minimum(Node* n = nullptr) const;
+    Node* Maximum(Node* n = nullptr) const;
+    Node* Predecessor(Node* n) const;
+    Node* Successor(Node* n) const;
     
 private:
-    void Transplant(Node<K, I>* m, Node<K, I>* n);  // Establishes mutual parent-child relationship; supports Insert().
-    Node<K, I>* Allocate(K k, I&& itm);
-    Node<K, I>* root;
+    void Transplant(Node* m, Node* n);  // Establishes mutual parent-child relationship; supports Insert().
+    Node* Allocate(K k, I&& itm);
+    Node* root;
 };
 
 template<typename K, typename I>
 Tree<K, I>::~Tree() {
-    if (Node<K, I>* min = Minimum(root)) { // Deletes by walking up the tree.
-        while (Node<K, I>* n = Successor(min)) {
+    if (Node* min = Minimum(root)) { // Deletes by walking up the tree.
+        while (Node* n = Successor(min)) {
             if (min->right) {
                 min->right->parent = nullptr;
             }
@@ -64,8 +64,8 @@ Tree<K, I>::~Tree() {
 
 template<typename K, typename I>
 void Tree<K, I>::TreeWalk() const {
-    if (Node<K, I>* min = Minimum(root)) { // Deletes by walking up the tree.
-        while (Node<K, I>* n = Successor(min)) {
+    if (Node* min = Minimum(root)) { // Deletes by walking up the tree.
+        while (Node* n = Successor(min)) {
             std::cout << "{ " << min->key << "    , " << min->item << " }" << '\n';
             min = n;
         }
@@ -75,9 +75,9 @@ void Tree<K, I>::TreeWalk() const {
 
 template<typename K, typename I>
 void Tree<K, I>::Insert(K k, I&& itm) {
-    if (Node<K, I>* insertion = Allocate(k, std::forward<I>(itm))) {
-        if (Node<K, I>* m = root) {
-            Node<K, I>* n = m;
+    if (Node* insertion = Allocate(k, std::forward<I>(itm))) {
+        if (Node* m = root) {
+            Node* n = m;
             while (n) {
                 m = n;
                 if (insertion->key < n->key) {
@@ -103,9 +103,9 @@ void Tree<K, I>::Insert(K k, I&& itm) {
 }
 
 template<typename K, typename I>
-void Tree<K, I>::Delete(Node<K, I>** n) {
+void Tree<K, I>::Delete(Node** n) {
     if (n != nullptr) {
-        if (Node<K, I>* np = *n) {
+        if (Node* np = *n) {
             if (nullptr == np->left) {
                 Transplant(np, np->right); // Handles parent-child references.
             }
@@ -113,7 +113,7 @@ void Tree<K, I>::Delete(Node<K, I>** n) {
                 Transplant(np, np->left);
             }
             else {
-                Node<K, I>* min = Minimum(np->right);
+                Node* min = Minimum(np->right);
                 if (np != min->parent) {
                     Transplant(min, min->right);
                     min->right = np->right;
@@ -123,7 +123,7 @@ void Tree<K, I>::Delete(Node<K, I>** n) {
                 min->left = np->left;
                 min->left->parent = min;
             }
-            Node<K, I> item = *np;
+            Node item = *np;
             delete* n;
             *n = nullptr;
         }
@@ -131,7 +131,7 @@ void Tree<K, I>::Delete(Node<K, I>** n) {
 }
 
 template<typename K, typename I>
-Node<K, I>* Tree<K, I>::Search(K k, Node<K, I>* n) const {
+typename Tree<K, I>::Node* Tree<K, I>::Search(K k, Node* n) const {
     if (n || root) {
         if (!n && root) {
             n = root;
@@ -150,7 +150,7 @@ Node<K, I>* Tree<K, I>::Search(K k, Node<K, I>* n) const {
 }
 
 template<typename K, typename I>
-Node<K, I>* Tree<K, I>::Minimum(Node<K, I>* n) const {
+typename Tree<K, I>::Node* Tree<K, I>::Minimum(Node* n) const {
     if (n || root) {
         if (!n) {
             n = root;
@@ -163,7 +163,7 @@ Node<K, I>* Tree<K, I>::Minimum(Node<K, I>* n) const {
 }
 
 template<typename K, typename I>
-Node<K, I>* Tree<K, I>::Maximum(Node<K, I>* n) const {
+typename Tree<K, I>::Node* Tree<K, I>::Maximum(Node* n) const {
     if (n || root) {
         if (!n) {
             n = root;
@@ -176,8 +176,8 @@ Node<K, I>* Tree<K, I>::Maximum(Node<K, I>* n) const {
 }
 
 template<typename K, typename I>
-Node<K, I>* Tree<K, I>::Predecessor(Node<K, I>* found) const {
-    if (Node<K, I>* n = found) {
+typename Tree<K, I>::Node* Tree<K, I>::Predecessor(Node* found) const {
+    if (Node* n = found) {
         if (n->left) {
             found = Maximum(n->left);
         }
@@ -195,8 +195,8 @@ Node<K, I>* Tree<K, I>::Predecessor(Node<K, I>* found) const {
 }
 
 template<typename K, typename I>
-Node<K, I>* Tree<K, I>::Successor(Node<K, I>* found) const {
-    if (Node<K, I>* n = found) {
+typename Tree<K, I>::Node* Tree<K, I>::Successor(Node* found) const {
+    if (Node* n = found) {
         if (n->right) {
             found = Minimum(n->right);
         }
@@ -214,7 +214,7 @@ Node<K, I>* Tree<K, I>::Successor(Node<K, I>* found) const {
 }
 
 template<typename K, typename I>
-void Tree<K, I>::Transplant(Node<K, I>* m, Node<K, I>* n) { 
+void Tree<K, I>::Transplant(Node* m, Node* n) { 
     if (n) {
         n->parent = m->parent;
     }
@@ -230,9 +230,9 @@ void Tree<K, I>::Transplant(Node<K, I>* m, Node<K, I>* n) {
 }
 
 template<typename K, typename I>
-Node<K, I>* Tree<K, I>::Allocate(K k, I&& itm) {
+typename Tree<K, I>::Node* Tree<K, I>::Allocate(K k, I&& itm) {
     try {
-        return new Node<K, I>{ k, std::forward<I>(itm) };
+        return new Node{ k, std::forward<I>(itm) };
     }
     catch (std::bad_alloc e) {
         std::cerr << "Node allocation failure on line " << __LINE__ - 3 << " of " << __FILE__ << "." << std::endl;

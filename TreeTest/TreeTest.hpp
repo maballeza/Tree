@@ -32,21 +32,21 @@ TYPED_TEST_SUITE_P(TreeTest);
 
 /**
 * Search
-*   Returns either a valid node pointer to the corresponding value or nullptr.
+*   Returns either a node pointer to the corresponding value or nullptr.
 */
 TYPED_TEST_P(TreeTest, Search) {
     using T = TypeParam;
     
     for (auto& k : this->keys) {
-        Node<int, T>* pBa = this->BalancedTr.Search(k);
-        Node<int, T>* pBr = this->BranchingTr.Search(k);
+        typename Tree<int, T>::Node* pBa = this->BalancedTr.Search(k);
+        typename Tree<int, T>::Node* pBr = this->BranchingTr.Search(k);
         EXPECT_EQ(static_cast<T>(k), pBa->item);
         EXPECT_EQ(static_cast<T>(k), pBr->item);
     }
 
     for (auto& k : this->keys) {
-        Node<int, T>* p1 = this->BalancedTr.Search(k);
-        Node<int, T>* p2 = this->BalancedTr.Search(k);
+        typename Tree<int, T>::Node* p1 = this->BalancedTr.Search(k);
+        typename Tree<int, T>::Node* p2 = this->BalancedTr.Search(k);
         EXPECT_EQ(&p1->item, &p2->item);
     }
 
@@ -65,8 +65,8 @@ TYPED_TEST_P(TreeTest, Minimum) {
     
     for (auto& k : this->keys) {// keys contains key values in ascending order.
         // 1. Find the node with the maximum value.
-        Node<int, T>* pBa = this->BalancedTr.Search(k);
-        Node<int, T>* pBr = this->BranchingTr.Search(k);
+        typename Tree<int, T>::Node* pBa = this->BalancedTr.Search(k);
+        typename Tree<int, T>::Node* pBr = this->BranchingTr.Search(k);
 
         // 2. Confirm it is the correct one.
         EXPECT_EQ(pBa, this->BalancedTr.Minimum());
@@ -86,8 +86,8 @@ TYPED_TEST_P(TreeTest, Maximum) {
     
     for (auto& k : this->rkeys) { // rkeys contains key values in descending order.
         // 1. Find the node with the maximum value.
-        Node<int, T>* pBa = this->BalancedTr.Search(k);
-        Node<int, T>* pBr = this->BranchingTr.Search(k);
+        typename Tree<int, T>::Node* pBa = this->BalancedTr.Search(k);
+        typename Tree<int, T>::Node* pBr = this->BranchingTr.Search(k);
 
         // 2. Confirm it is the correct one.
         EXPECT_EQ(pBa, this->BalancedTr.Maximum());
@@ -110,22 +110,22 @@ TYPED_TEST_P(TreeTest, Predecessor) {
     using T = TypeParam;
 
     for (auto& k : this->keys) {
-        Node<int, T>* pBa_1 = this->BalancedTr.Search(k);
-        Node<int, T>* pBr_1 = this->BranchingTr.Search(k);
+        typename Tree<int, T>::Node* pBa_1 = this->BalancedTr.Search(k);
+        typename Tree<int, T>::Node* pBr_1 = this->BranchingTr.Search(k);
         if (k == this->keys.front()) {
             EXPECT_EQ(nullptr, this->BalancedTr.Predecessor(pBa_1));
             EXPECT_EQ(nullptr, this->BranchingTr.Predecessor(pBr_1));
         }
         else {
-            Node<int, T>* pBa_0 = this->BalancedTr.Search(k - 1);
-            Node<int, T>* pBr_0 = this->BranchingTr.Search(k - 1);
+            typename Tree<int, T>::Node* pBa_0 = this->BalancedTr.Search(k - 1);
+            typename Tree<int, T>::Node* pBr_0 = this->BranchingTr.Search(k - 1);
             EXPECT_EQ(pBa_0, this->BalancedTr.Predecessor(pBa_1));
             EXPECT_EQ(pBr_0, this->BranchingTr.Predecessor(pBr_1));
         }
     }
     
     int arbitrary = this->keys.size();
-    Node<int, T>* pArbitrary = this->EmptyTr.Search(arbitrary);
+    typename Tree<int, T>::Node* pArbitrary = this->EmptyTr.Search(arbitrary);
     EXPECT_EQ(nullptr, this->EmptyTr.Predecessor(pArbitrary));
 }
 
@@ -133,22 +133,22 @@ TYPED_TEST_P(TreeTest, Successor) {
     using T = TypeParam;
 
     for (auto& k : this->keys) {
-        Node<int, T>* pBa_0 = this->BalancedTr.Search(k);
-        Node<int, T>* pBr_0 = this->BranchingTr.Search(k);
+        typename Tree<int, T>::Node* pBa_0 = this->BalancedTr.Search(k);
+        typename Tree<int, T>::Node* pBr_0 = this->BranchingTr.Search(k);
         if (k == this->keys.back()) {
             EXPECT_EQ(nullptr, this->BalancedTr.Successor(pBa_0));
             EXPECT_EQ(nullptr, this->BranchingTr.Successor(pBr_0));
         }
         else {
-            Node<int, T>* pBa_1 = this->BalancedTr.Search(k + 1);
-            Node<int, T>* pBr_1 = this->BranchingTr.Search(k + 1);
+            typename Tree<int, T>::Node* pBa_1 = this->BalancedTr.Search(k + 1);
+            typename Tree<int, T>::Node* pBr_1 = this->BranchingTr.Search(k + 1);
             EXPECT_EQ(pBa_1, this->BalancedTr.Successor(pBa_0));
             EXPECT_EQ(pBr_1, this->BranchingTr.Successor(pBr_0));
         }
     }
 
     int arbitrary = this->keys.size();
-    Node<int, T>* pArbitrary = this->EmptyTr.Search(arbitrary);
+    typename Tree<int, T>::Node* pArbitrary = this->EmptyTr.Search(arbitrary);
     EXPECT_EQ(nullptr, this->EmptyTr.Successor(pArbitrary));
 }
 
@@ -184,8 +184,8 @@ TYPED_TEST_P(TreeTest, Delete) {
     
     // 1. Obtain a node pointer to the indicated value.
     int freed = this->keys.front();
-    Node<int, T>* pFBa = this->BalancedTr.Search(freed);
-    Node<int, T>* pFBr = this->BranchingTr.Search(freed);
+    typename Tree<int, T>::Node* pFBa = this->BalancedTr.Search(freed);
+    typename Tree<int, T>::Node* pFBr = this->BranchingTr.Search(freed);
 
     // 2. Remove the node.
     T deletedBaItem = pFBa->item;
@@ -197,8 +197,8 @@ TYPED_TEST_P(TreeTest, Delete) {
 
     // 3. Ensure it is the only one missing.
     for (auto& k : this->keys) {
-        Node<int, T>* pValBa = this->BalancedTr.Search(k);
-        Node<int, T>* pValBr = this->BranchingTr.Search(k);
+        typename Tree<int, T>::Node* pValBa = this->BalancedTr.Search(k);
+        typename Tree<int, T>::Node* pValBr = this->BranchingTr.Search(k);
         if (k == freed) {
             EXPECT_EQ(nullptr, pValBa);
             EXPECT_EQ(nullptr, pValBr);

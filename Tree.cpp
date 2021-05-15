@@ -7,7 +7,7 @@
 int main() {
     Tree<double, double> t;
     const int range = 200;
-    std::array<Node<double, double>*, range> ptrs;
+    std::array<Tree<double, double>::Node*, range> ptrs;
 
     // Tree mapping sinusoidally changing values from a range (e.g. 0 to 200) with its corresponding radial value.
     for (int i = 0; i < range; ++i) {
