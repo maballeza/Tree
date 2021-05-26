@@ -1,18 +1,17 @@
 #pragma once
-
+#include "Node.hpp"
 
 /**
 *   Unbalanced Binary Tree
 */
-template<typename K, typename I>
+template<typename K, class I>
 class Tree {
 public:
-    struct Node {
-        K key;
-        I item;
-    private:
+    struct Node : BaseNode<I> {
         friend class Tree;
-        Node(K k, I&& v) : key(k), item(v), parent{}, left{}, right{} {}
+        K key;
+    private:
+        Node(K k, I&& v) : BaseNode<I>(std::forward<I>(v)), key(k), parent{}, left{}, right{} {}
         Node* parent;
         Node* left;
         Node* right;
@@ -45,7 +44,7 @@ private:
     Node* root;
 };
 
-template<typename K, typename I>
+template<typename K, class I>
 Tree<K, I>::~Tree() {
     if (Node* min = Minimum(root)) { // Deletes by walking up the tree.
         while (Node* n = Successor(min)) {
@@ -62,7 +61,7 @@ Tree<K, I>::~Tree() {
     }
 }
 
-template<typename K, typename I>
+template<typename K, class I>
 void Tree<K, I>::TreeWalk() const {
     if (Node* min = Minimum(root)) { // Deletes by walking up the tree.
         while (Node* n = Successor(min)) {
@@ -73,7 +72,7 @@ void Tree<K, I>::TreeWalk() const {
     }
 }
 
-template<typename K, typename I>
+template<typename K, class I>
 void Tree<K, I>::Insert(K k, I&& itm) {
     if (Node* insertion = Allocate(k, std::forward<I>(itm))) {
         if (Node* m = root) {
@@ -102,7 +101,7 @@ void Tree<K, I>::Insert(K k, I&& itm) {
     }
 }
 
-template<typename K, typename I>
+template<typename K, class I>
 void Tree<K, I>::Delete(Node** n) {
     if (n != nullptr) {
         if (Node* np = *n) {
@@ -130,7 +129,7 @@ void Tree<K, I>::Delete(Node** n) {
     }
 }
 
-template<typename K, typename I>
+template<typename K, class I>
 typename Tree<K, I>::Node* Tree<K, I>::Search(K k, Node* n) const {
     if (n || root) {
         if (!n && root) {
@@ -149,7 +148,7 @@ typename Tree<K, I>::Node* Tree<K, I>::Search(K k, Node* n) const {
     return n;
 }
 
-template<typename K, typename I>
+template<typename K, class I>
 typename Tree<K, I>::Node* Tree<K, I>::Minimum(Node* n) const {
     if (n || root) {
         if (!n) {
@@ -162,7 +161,7 @@ typename Tree<K, I>::Node* Tree<K, I>::Minimum(Node* n) const {
     return n;
 }
 
-template<typename K, typename I>
+template<typename K, class I>
 typename Tree<K, I>::Node* Tree<K, I>::Maximum(Node* n) const {
     if (n || root) {
         if (!n) {
@@ -175,7 +174,7 @@ typename Tree<K, I>::Node* Tree<K, I>::Maximum(Node* n) const {
     return n;
 }
 
-template<typename K, typename I>
+template<typename K, class I>
 typename Tree<K, I>::Node* Tree<K, I>::Predecessor(Node* found) const {
     if (Node* n = found) {
         if (n->left) {
@@ -194,7 +193,7 @@ typename Tree<K, I>::Node* Tree<K, I>::Predecessor(Node* found) const {
     return found;
 }
 
-template<typename K, typename I>
+template<typename K, class I>
 typename Tree<K, I>::Node* Tree<K, I>::Successor(Node* found) const {
     if (Node* n = found) {
         if (n->right) {
@@ -213,7 +212,7 @@ typename Tree<K, I>::Node* Tree<K, I>::Successor(Node* found) const {
     return found;
 }
 
-template<typename K, typename I>
+template<typename K, class I>
 void Tree<K, I>::Transplant(Node* m, Node* n) { 
     if (n) {
         n->parent = m->parent;
@@ -229,7 +228,7 @@ void Tree<K, I>::Transplant(Node* m, Node* n) {
     }
 }
 
-template<typename K, typename I>
+template<typename K, class I>
 typename Tree<K, I>::Node* Tree<K, I>::Allocate(K k, I&& itm) {
     try {
         return new Node{ k, std::forward<I>(itm) };
