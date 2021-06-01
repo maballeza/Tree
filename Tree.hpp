@@ -11,7 +11,7 @@ public:
         friend class Tree;
         K key;
     private:
-        Node(K k, I&& v) : BaseNode<I>(std::forward<I>(v)), key(k), parent{}, left{}, right{} {}
+        Node(K k, I&& itm) : BaseNode<I>(std::forward<I>(itm)), key(k), parent{}, left{}, right{} {}
         Node* parent;
         Node* left;
         Node* right;
@@ -63,7 +63,7 @@ Tree<K, I>::~Tree() {
 
 template<typename K, class I>
 void Tree<K, I>::TreeWalk() const {
-    if (Node* min = Minimum(root)) { // Deletes by walking up the tree.
+    if (Node* min = Minimum(root)) {
         while (Node* n = Successor(min)) {
             std::cout << "{ " << min->key << "    , " << min->item << " }" << '\n';
             min = n;
