@@ -1,5 +1,6 @@
 #pragma once
 #include "Node.hpp"
+#include <vector>
 
 /**
 *   Unbalanced Binary Tree
@@ -16,13 +17,11 @@ public:
         Node* left;
         Node* right;
     };
-
-    Tree() : root{} {}
+    
+    Tree() : root{} {};
     Tree(Tree&& t);
     ~Tree();
-    
-    void Walk() const;
-    
+        
     /**
     * Modifiers
     */
@@ -38,11 +37,13 @@ public:
     Node* Maximum(Node* n = nullptr) const;
     Node* Predecessor(Node* n) const;
     Node* Successor(Node* n) const;
-    
+    std::vector<std::pair<K, I>> Walk() const;
+
 private:
+    Node* Allocate(K k, I&& itm);
+    void DeallocateTree(Node** n);
     void Clone(Node* n);
     void Transplant(Node* m, Node* n);  // Establishes mutual parent-child relationship; supports Insert().
-    Node* Allocate(K k, I&& itm);
     Node* root;
 };
 
@@ -55,25 +56,18 @@ Tree<K, I>::Tree(Tree&& t) {
 template<typename K, class I>
 Tree<K, I>::~Tree() {
     if (Node* min = Minimum(root)) { // Deletes by walking up the tree.
-        while (Node* n = Successor(min)) {
-            if (min->right) {
-                min->right->parent = nullptr;
-            }
-            if (nullptr != min->parent && min == min->parent->left) {
-                min->parent->left = nullptr;
-            }
-            delete min;
-            min = n;
-        }
-        delete min;
+        DeallocateTree(&min);
     }
+    root = nullptr;
 }
 
 template<typename K, class I>
-void Tree<K, I>::Walk() const {
+std::vector<std::pair<K, I>> Tree<K, I>::Walk() const {
+    std::vector<std::pair<K, I>> v;
     for (Node* n = Minimum(root); n; n = Successor(n)) {
-        std::cout << "{ " << n->key << "    , " << n->item << " }" << '\n';
+        v.emplace_back(n->key, n->item);
     }
+    return v;
 }
 
 template<typename K, class I>
@@ -217,6 +211,35 @@ typename Tree<K, I>::Node* Tree<K, I>::Successor(Node* found) const {
 }
 
 template<typename K, class I>
+typename Tree<K, I>::Node* Tree<K, I>::Allocate(K k, I&& itm) {
+    try {
+        return new Node{ k, std::forward<I>(itm) };
+    }
+    catch (std::bad_alloc e) {
+        std::cerr << "Node allocation failure on line " << __LINE__ - 3 << " of " << __FILE__ << "." << std::endl;
+        return nullptr;
+    }
+}
+
+template<typename K, typename I>
+void Tree<K, I>::DeallocateTree(Node** n) {
+    if (Node* m = *n; m = Successor(m)) {
+        DeallocateTree(&m);
+    }
+    delete* n;
+    *n = nullptr;
+}
+
+template<typename K, typename I>
+void Tree<K, I>::Clone(Node* n) {
+    if (n) {
+        Insert(n->key, std::move(n->item));
+        Clone(n->left);
+        Clone(n->right);
+    }
+}
+
+template<typename K, class I>
 void Tree<K, I>::Transplant(Node* m, Node* n) { 
     if (n) {
         n->parent = m->parent;
@@ -229,25 +252,5 @@ void Tree<K, I>::Transplant(Node* m, Node* n) {
     }
     else {
         m->parent->left = n;
-    }
-}
-
-template<typename K, class I>
-typename Tree<K, I>::Node* Tree<K, I>::Allocate(K k, I&& itm) {
-    try {
-        return new Node{ k, std::forward<I>(itm) };
-    }
-    catch (std::bad_alloc e) {
-        std::cerr << "Node allocation failure on line " << __LINE__ - 3 << " of " << __FILE__ << "." << std::endl;
-        return nullptr;
-    }
-}
-
-template<typename K, typename I>
-void Tree<K, I>::Clone(Node* n) {
-    if (n) {
-        Insert(n->key, std::move(n->item));
-        Clone(n->left);
-        Clone(n->right);
     }
 }

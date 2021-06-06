@@ -12,6 +12,8 @@ std::vector<std::string> names{
 using types = testing::Types<char, int, long, float, double>;
 
 REGISTER_TYPED_TEST_SUITE_P(TreeTest,
+    MoveConstructor,
+    Destructor,
     Search,
     Minimum,
     Maximum,
