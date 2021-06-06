@@ -22,12 +22,12 @@ int main() {
     }
     
     // Print values to terminal.
-    t.TreeWalk();
+    //t.Walk();
 
     for (int i = 0; i < range; ++i) {
         double k = static_cast<double>(i) / range * 2 * M_PI;
         double val = static_cast<double>(range / 2) * (1 + cos(3 * M_PI_4 + k));
         t.Delete(&ptrs[i]);
-        if (ptrs[i] != nullptr) throw;
+        //if (ptrs[i] != nullptr) throw;
     }
  }

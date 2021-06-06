@@ -18,9 +18,10 @@ public:
     };
 
     Tree() : root{} {}
+    Tree(Tree&& t);
     ~Tree();
     
-    void TreeWalk() const;
+    void Walk() const;
     
     /**
     * Modifiers
@@ -39,10 +40,17 @@ public:
     Node* Successor(Node* n) const;
     
 private:
+    void Clone(Node* n);
     void Transplant(Node* m, Node* n);  // Establishes mutual parent-child relationship; supports Insert().
     Node* Allocate(K k, I&& itm);
     Node* root;
 };
+
+template<typename K, typename I>
+Tree<K, I>::Tree(Tree&& t) {
+    Clone(t.root);
+    t.~Tree();
+}
 
 template<typename K, class I>
 Tree<K, I>::~Tree() {
@@ -62,13 +70,9 @@ Tree<K, I>::~Tree() {
 }
 
 template<typename K, class I>
-void Tree<K, I>::TreeWalk() const {
-    if (Node* min = Minimum(root)) {
-        while (Node* n = Successor(min)) {
-            std::cout << "{ " << min->key << "    , " << min->item << " }" << '\n';
-            min = n;
-        }
-        std::cout << "{ " << min->key << "\t, " << min->item << " }" << '\n';
+void Tree<K, I>::Walk() const {
+    for (Node* n = Minimum(root); n; n = Successor(n)) {
+        std::cout << "{ " << n->key << "    , " << n->item << " }" << '\n';
     }
 }
 
@@ -236,5 +240,14 @@ typename Tree<K, I>::Node* Tree<K, I>::Allocate(K k, I&& itm) {
     catch (std::bad_alloc e) {
         std::cerr << "Node allocation failure on line " << __LINE__ - 3 << " of " << __FILE__ << "." << std::endl;
         return nullptr;
+    }
+}
+
+template<typename K, typename I>
+void Tree<K, I>::Clone(Node* n) {
+    if (n) {
+        Insert(n->key, std::move(n->item));
+        Clone(n->left);
+        Clone(n->right);
     }
 }
