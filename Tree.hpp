@@ -19,7 +19,7 @@ public:
     };
     
     Tree() : root{} {};
-    Tree(Tree&& t);
+    Tree(Tree&& t) noexcept;
     ~Tree();
         
     /**
@@ -48,7 +48,7 @@ private:
 };
 
 template<typename K, typename I>
-Tree<K, I>::Tree(Tree&& t) {
+Tree<K, I>::Tree(Tree&& t) noexcept {
     Clone(t.root);
     t.~Tree();
 }

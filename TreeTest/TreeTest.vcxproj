@@ -164,8 +164,10 @@
   <ItemGroup>
     <ClInclude Include="TreeTest.hpp" />
     <ClInclude Include="TreeTestListener.hpp" />
+    <ClInclude Include="TreeTestString.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="TreeTestString.cpp" />
     <ClCompile Include="TreeTest.cpp" />
   </ItemGroup>
   <ItemGroup>

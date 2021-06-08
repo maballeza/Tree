@@ -21,9 +21,15 @@
     <ClInclude Include="TreeTestListener.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TreeTestString.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="TreeTest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TreeTestString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

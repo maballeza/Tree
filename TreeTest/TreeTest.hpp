@@ -73,16 +73,13 @@ TYPED_TEST_P(TreeTest, MoveConstructor) {
 TYPED_TEST_P(TreeTest, Destructor) {
     using I = TypeParam;
 
-    Tree<int, I>* trp;
+    Tree<int, I>* trP;
     {
         Tree<int, I> tr{ std::move(this->BalancedTr) };
-        trp = &tr;
-        EXPECT_EQ(tr.Minimum()->item, trp->Minimum()->item);
-        EXPECT_EQ(tr.Maximum()->item, trp->Maximum()->item);
+        trP = &tr;
     }
-
-    EXPECT_EQ(nullptr, trp->Minimum());
-    EXPECT_EQ(nullptr, trp->Maximum());
+    EXPECT_EQ(nullptr, trP->Minimum());
+    EXPECT_EQ(nullptr, trP->Maximum());
 }
 
 /**
@@ -100,12 +97,14 @@ TYPED_TEST_P(TreeTest, Search) {
         EXPECT_EQ(static_cast<I>(k), pBr->item);
     }
 
+    // Consistency
     for (auto& k : this->keys) {
         Node* p1 = this->BalancedTr.Search(k);
         Node* p2 = this->BalancedTr.Search(k);
         EXPECT_EQ(&p1->item, &p2->item);
     }
 
+    // Non-Existent Value
     int arbitrary = this->keys.size();
     EXPECT_EQ(nullptr, this->BalancedTr.Search(arbitrary));
     EXPECT_EQ(nullptr, this->BranchingTr.Search(arbitrary));
@@ -120,7 +119,7 @@ TYPED_TEST_P(TreeTest, Minimum) {
     using I = TypeParam;
     using Node = typename Tree<int, I>::Node;
 
-    for (auto& k : this->keys) {// keys contains key values in ascending order.
+    for (auto& k : this->keys) { // 'keys' contains key values in ascending order.
         // 1. Find the node with the maximum value.
         Node* pBa = this->BalancedTr.Search(k);
         Node* pBr = this->BranchingTr.Search(k);
@@ -129,7 +128,7 @@ TYPED_TEST_P(TreeTest, Minimum) {
         EXPECT_EQ(pBa, this->BalancedTr.Minimum());
         EXPECT_EQ(pBr, this->BranchingTr.Minimum());
 
-        // 3. Remove it for testing during the following iteration.
+        // 3. Remove it for iterative testing.
         this->BalancedTr.Delete(&pBa);
         this->BranchingTr.Delete(&pBr);
     }
@@ -142,7 +141,7 @@ TYPED_TEST_P(TreeTest, Maximum) {
     using I = TypeParam;
     using Node = typename Tree<int, I>::Node;
 
-    for (auto& k : this->rkeys) { // rkeys contains key values in descending order.
+    for (auto& k : this->rkeys) { // 'rkeys' contains key values in descending order.
         // 1. Find the node with the maximum value.
         Node* pBa = this->BalancedTr.Search(k);
         Node* pBr = this->BranchingTr.Search(k);
@@ -151,7 +150,7 @@ TYPED_TEST_P(TreeTest, Maximum) {
         EXPECT_EQ(pBa, this->BalancedTr.Maximum());
         EXPECT_EQ(pBr, this->BranchingTr.Maximum());
 
-        // 3. Remove it for testing during the following iteration.
+        // 3. Remove it for iterative testing.
         this->BalancedTr.Delete(&pBa);
         this->BranchingTr.Delete(&pBr);
     }
@@ -168,6 +167,7 @@ TYPED_TEST_P(TreeTest, Predecessor) {
     using I = TypeParam;
     using Node = typename Tree<int, I>::Node;
 
+    // Confirm a predecessor does not exist only for the smallest value.
     for (auto& k : this->keys) {
         Node* pBa_1 = this->BalancedTr.Search(k);
         Node* pBr_1 = this->BranchingTr.Search(k);
@@ -192,6 +192,7 @@ TYPED_TEST_P(TreeTest, Successor) {
     using I = TypeParam;
     using Node = typename Tree<int, I>::Node;
 
+    // Confirm a successor does not exist only for the greatest value.
     for (auto& k : this->keys) {
         Node* pBa_0 = this->BalancedTr.Search(k);
         Node* pBr_0 = this->BranchingTr.Search(k);
@@ -229,10 +230,6 @@ TYPED_TEST_P(TreeTest, Insert) {
     EXPECT_EQ(static_cast<I>(arbitrary), this->BalancedTr.Search(arbitrary)->item);
     EXPECT_EQ(static_cast<I>(arbitrary), this->BranchingTr.Search(arbitrary)->item);
     EXPECT_EQ(static_cast<I>(arbitrary), this->EmptyTr.Search(arbitrary)->item);
-    
-    EXPECT_NE(nullptr, this->BalancedTr.Search(arbitrary));
-    EXPECT_NE(nullptr, this->BranchingTr.Search(arbitrary));
-    EXPECT_NE(nullptr, this->EmptyTr.Search(arbitrary));
 }
 
 /**
@@ -243,14 +240,12 @@ TYPED_TEST_P(TreeTest, Delete) {
     using I = TypeParam;
     using Node = typename Tree<int, I>::Node;
 
-    // 1. Obtain a node pointer to the indicated value.
+    // 1. Obtain a node pointer to the indicated value for removal.
     int freed = this->keys.front();
     Node* pFBa = this->BalancedTr.Search(freed);
     Node* pFBr = this->BranchingTr.Search(freed);
 
     // 2. Remove the node.
-    I deletedBaItem = pFBa->item;
-    I deletedBrItem = pFBr->item;
     this->BalancedTr.Delete(&pFBa);
     this->BranchingTr.Delete(&pFBr);
     EXPECT_EQ(nullptr, pFBa);
@@ -264,10 +259,6 @@ TYPED_TEST_P(TreeTest, Delete) {
             EXPECT_EQ(nullptr, pValBa);
             EXPECT_EQ(nullptr, pValBr);
         }
-        else {
-            EXPECT_NE(nullptr, pValBa);
-            EXPECT_NE(nullptr, pValBr);
-        }
     }
 
     // 4. Remove remaining nodes, ensuring they've been effectively deleted.
@@ -275,8 +266,6 @@ TYPED_TEST_P(TreeTest, Delete) {
         pFBa = this->BalancedTr.Search(k);
         pFBr = this->BranchingTr.Search(k);
         if (k != freed) {
-            EXPECT_NE(nullptr, pFBa);
-            EXPECT_NE(nullptr, pFBr);
             this->BalancedTr.Delete(&pFBa);
             this->BranchingTr.Delete(&pFBr);
             EXPECT_EQ(nullptr, pFBa);
