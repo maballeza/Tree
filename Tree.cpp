@@ -6,7 +6,7 @@
 
 int main() {
     Tree<double, double> t;
-    
+
     const int range = 200;
     std::array<Tree<double, double>::Node*, range> ptrs;
 
@@ -20,7 +20,7 @@ int main() {
     for (int i = 0; i < range; ++i) {
         double k = static_cast<double>(i) / range * 2 * M_PI;
         double val = static_cast<double>(range / 2) * (1 + cos(3 * M_PI_4 + k));
-        ptrs[i] = t.Search(k);
+        ptrs[i] = t[k];
     }
 
     for (int i = 0; i < range; ++i) {

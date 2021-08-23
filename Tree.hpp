@@ -5,17 +5,17 @@
 /**
 *   Unbalanced Binary Tree
 */
-template<typename K, class I>
+template <typename K, class I>
 class Tree {
 public:
     struct Node : BaseNode<I> {
-        friend class Tree;
         K key;
     private:
-        Node(K k, I&& itm) : BaseNode<I>(std::forward<I>(itm)), key(k), parent{}, left{}, right{} {}
+        Node(K k, I&& i) : BaseNode<I>(std::forward<I>(i)), key{ k }, parent{}, left{}, right{} {}
         Node* parent;
         Node* left;
         Node* right;
+        friend class Tree;
     };
     
     Tree() : root{} {};
@@ -25,35 +25,38 @@ public:
     /**
     * Modifiers
     */
-    void Insert(K k, I&& itm);
-    void Delete(Node** n);
+    void Insert(K k, I&& i);
+    void Delete(Node** n) noexcept;
     
     /**
     * Accessors
     *  Return nullptr if the requested item does not exist or if the tree is empty.
     */
+    Node* operator[](K k) { return Search(k); }
+    
     Node* Search(K k, Node* n = nullptr) const;
     Node* Minimum(Node* n = nullptr) const;
     Node* Maximum(Node* n = nullptr) const;
     Node* Predecessor(Node* n) const;
     Node* Successor(Node* n) const;
+    
     std::vector<std::pair<K, I>> Walk() const;
 
 private:
-    Node* Allocate(K k, I&& itm);
-    void DeallocateTree(Node** n);
+    Node* Allocate(K k, I&& i);
+    void DeallocateTree(Node** n) noexcept;
     void Clone(Node* n);
     void Transplant(Node* m, Node* n);  // Establishes mutual parent-child relationship; supports Insert().
     Node* root;
 };
 
-template<typename K, typename I>
+template <typename K, typename I>
 Tree<K, I>::Tree(Tree&& t) noexcept {
     Clone(t.root);
     t.~Tree();
 }
 
-template<typename K, class I>
+template <typename K, class I>
 Tree<K, I>::~Tree() {
     if (Node* min = Minimum(root)) { // Deletes by walking up the tree.
         DeallocateTree(&min);
@@ -61,7 +64,7 @@ Tree<K, I>::~Tree() {
     root = nullptr;
 }
 
-template<typename K, class I>
+template <typename K, class I>
 std::vector<std::pair<K, I>> Tree<K, I>::Walk() const {
     std::vector<std::pair<K, I>> v;
     for (Node* n = Minimum(root); n; n = Successor(n)) {
@@ -70,9 +73,9 @@ std::vector<std::pair<K, I>> Tree<K, I>::Walk() const {
     return v;
 }
 
-template<typename K, class I>
-void Tree<K, I>::Insert(K k, I&& itm) {
-    if (Node* insertion = Allocate(k, std::forward<I>(itm))) {
+template <typename K, class I>
+void Tree<K, I>::Insert(K key, I&& item) {
+    if (Node* insertion = Allocate(key, std::forward<I>(item))) {
         if (Node* m = root) {
             Node* n = m;
             while (n) {
@@ -99,8 +102,8 @@ void Tree<K, I>::Insert(K k, I&& itm) {
     }
 }
 
-template<typename K, class I>
-void Tree<K, I>::Delete(Node** n) {
+template <typename K, class I>
+void Tree<K, I>::Delete(Node** n) noexcept {
     if (n != nullptr) {
         if (Node* np = *n) {
             if (nullptr == np->left) {
@@ -120,33 +123,32 @@ void Tree<K, I>::Delete(Node** n) {
                 min->left = np->left;
                 min->left->parent = min;
             }
-            Node item = *np;
             delete* n;
             *n = nullptr;
         }
     }
 }
 
-template<typename K, class I>
-typename Tree<K, I>::Node* Tree<K, I>::Search(K k, Node* n) const {
+template <typename K, class I>
+typename Tree<K, I>::Node* Tree<K, I>::Search(K key, Node* n) const {
     if (n || root) {
         if (!n && root) {
             n = root;
         }
-        if (n->key < k && n->right) {
-            n = Search(k, n->right);
+        if (n->key < key && n->right) {
+            n = Search(key, n->right);
         }
-        else if (k < n->key && n->left) {
-            n = Search(k, n->left);
+        else if (key < n->key && n->left) {
+            n = Search(key, n->left);
         }
-        else if (k != n->key) {
+        else if (key != n->key) {
             n = nullptr;
         }
     }
     return n;
 }
 
-template<typename K, class I>
+template <typename K, class I>
 typename Tree<K, I>::Node* Tree<K, I>::Minimum(Node* n) const {
     if (n || root) {
         if (!n) {
@@ -159,7 +161,7 @@ typename Tree<K, I>::Node* Tree<K, I>::Minimum(Node* n) const {
     return n;
 }
 
-template<typename K, class I>
+template <typename K, class I>
 typename Tree<K, I>::Node* Tree<K, I>::Maximum(Node* n) const {
     if (n || root) {
         if (!n) {
@@ -172,7 +174,7 @@ typename Tree<K, I>::Node* Tree<K, I>::Maximum(Node* n) const {
     return n;
 }
 
-template<typename K, class I>
+template <typename K, class I>
 typename Tree<K, I>::Node* Tree<K, I>::Predecessor(Node* found) const {
     if (Node* n = found) {
         if (n->left) {
@@ -191,7 +193,7 @@ typename Tree<K, I>::Node* Tree<K, I>::Predecessor(Node* found) const {
     return found;
 }
 
-template<typename K, class I>
+template <typename K, class I>
 typename Tree<K, I>::Node* Tree<K, I>::Successor(Node* found) const {
     if (Node* n = found) {
         if (n->right) {
@@ -210,19 +212,19 @@ typename Tree<K, I>::Node* Tree<K, I>::Successor(Node* found) const {
     return found;
 }
 
-template<typename K, class I>
-typename Tree<K, I>::Node* Tree<K, I>::Allocate(K k, I&& itm) {
+template <typename K, class I>
+typename Tree<K, I>::Node* Tree<K, I>::Allocate(K key, I&& item) {
     try {
-        return new Node{ k, std::forward<I>(itm) };
+        return new Node{ key, std::forward<I>(item) };
     }
-    catch (std::bad_alloc e) {
+    catch (std::bad_alloc& e) {
         std::cerr << "Node allocation failure on line " << __LINE__ - 3 << " of " << __FILE__ << "." << std::endl;
         return nullptr;
     }
 }
 
-template<typename K, typename I>
-void Tree<K, I>::DeallocateTree(Node** n) {
+template <typename K, typename I>
+void Tree<K, I>::DeallocateTree(Node** n) noexcept {
     if (Node* m = *n; m = Successor(m)) {
         DeallocateTree(&m);
     }
@@ -230,7 +232,7 @@ void Tree<K, I>::DeallocateTree(Node** n) {
     *n = nullptr;
 }
 
-template<typename K, typename I>
+template <typename K, typename I>
 void Tree<K, I>::Clone(Node* n) {
     if (n) {
         Insert(n->key, std::move(n->item));
@@ -239,7 +241,7 @@ void Tree<K, I>::Clone(Node* n) {
     }
 }
 
-template<typename K, class I>
+template <typename K, class I>
 void Tree<K, I>::Transplant(Node* m, Node* n) { 
     if (n) {
         n->parent = m->parent;
