@@ -47,7 +47,7 @@ struct HNode {
 };
 
 template <template <typename> class N, typename I>
-struct Build : N<I> {
+struct Acquire : N<I> {
     using Node = N<I>;
     static HNode<N, I> Instance(I&& i) { return HNode<N, I>{ typename Node::template Allocate<Node>(std::forward<I>(i)) }; }
 };
